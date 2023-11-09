@@ -1,0 +1,28 @@
+# Import necessary libraries
+from pyspark.sql import SparkSession
+
+# Create Spark Session
+spark = SparkSession.builder.getOrCreate()
+
+# Define Azure Data Lake Storage Gen2 parameters
+account_name = 'mydatalake'
+container_name = 'raw'
+relative_path = 'mydata.csv'
+adls_path = f'abfss://{container_name}@{account_name}.dfs.core.windows.net/{relative_path}'
+
+# Read data from Azure Data Lake Storage Gen2
+df = spark.read.format('csv').option('header', 'true').load(adls_path)
+
+# Define Snowflake parameters
+sfOptions = {
+  "sfURL" : "myaccount.snowflakecomputing.com",
+  "sfDatabase" : "MYDB",
+  "sfWarehouse" : "MYWAREHOUSE",
+  "sfSchema" : "PUBLIC",
+  "sfRole" : "SYSADMIN",
+  "sfUser" : "myuser",
+  "sfPassword" : "mypassword",
+}
+
+# Write data into Snowflake
+df.write.format("snowflake").options(**sfOptions).option("dbtable", "MYTABLE").mode("append").save()
